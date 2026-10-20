@@ -28,6 +28,9 @@ jobs:
           cache: true
       - name: Create Android platform scaffolding
         run: flutter create --platforms=android --org com.hyouka56 --project-name contacts_flutter .
+      - name: Disable Gradle file watching in CI
+        run: |
+          printf '\n# Avoid duplicate file-watch paths on ephemeral CI runners.\norg.gradle.vfs.watch=false\n' >> android/gradle.properties
       - name: Restore app test
         run: |
           cat > test/widget_test.dart <<'EOF'
