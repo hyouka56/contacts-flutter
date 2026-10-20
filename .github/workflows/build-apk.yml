@@ -26,7 +26,20 @@ jobs:
           cache: true
       - name: Create Android platform scaffolding
         run: flutter create --platforms=android --org com.hyouka56 --project-name contacts_flutter .
-      - name: Restore app manifest permission
+      - name: Restore app test
+        run: |
+          cat > test/widget_test.dart <<'EOF'
+          import 'package:flutter_test/flutter_test.dart';
+          import 'package:contacts_flutter/main.dart';
+
+          void main() {
+            testWidgets('Contacts app renders its title', (tester) async {
+              await tester.pumpWidget(const ContactsApp());
+              expect(find.text('Contacts'), findsOneWidget);
+            });
+          }
+          EOF
+      - name: Restore contacts permission
         run: |
           python3 - <<'PY'
           from pathlib import Path
