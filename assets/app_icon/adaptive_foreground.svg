@@ -1,5 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-<title>Contacts adaptive foreground</title><desc>Transparent symbol layer with safe margins for Android adaptive icon masking.</desc>
-<path d="M268 320Q374 284 490 330V718Q374 672 268 708Z" fill="none" stroke="#FFFFFF" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/><path d="M756 320Q650 284 534 330V718Q650 672 756 708Z" fill="none" stroke="#FFFFFF" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/><path d="M512 338V714" fill="none" stroke="#FFFFFF" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>
+  <title>Contacts — Minimal Profile Adaptive Foreground</title>
+  <desc>Transparent launcher foreground with a centered white user silhouette.</desc>
+  <g fill="#FFFFFF">
+    <circle cx="512" cy="352" r="126"/>
+    <path d="M226 838c14-169 126-271 286-271s272 102 286 271c2 22-14 40-36 40H262c-22 0-38-18-36-40z"/>
+  </g>
 </svg>
