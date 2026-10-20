@@ -79,8 +79,8 @@ class _ContactsHomeState extends State<ContactsHome> {
       _permissionDenied = false;
     });
     try {
-      final granted = await FlutterContacts.requestPermission(readonly: true);
-      if (!granted) {
+      final permissionStatus = await FlutterContacts.permissions.request(PermissionType.read);
+      if (permissionStatus != PermissionStatus.granted) {
         if (mounted) {
           setState(() {
             _permissionDenied = true;
@@ -89,11 +89,11 @@ class _ContactsHomeState extends State<ContactsHome> {
         }
         return;
       }
-      final contacts = await FlutterContacts.getContacts(
-        withProperties: true,
-        withPhoto: false,
+      final contacts = await FlutterContacts.getAll(
+        properties: {ContactProperty.phone},
       );
-      contacts.sort((a, b) => a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()));
+      contacts.sort((a, b) =>
+          _displayName(a).toLowerCase().compareTo(_displayName(b).toLowerCase()));
       if (mounted) {
         setState(() {
           _contacts = contacts;
@@ -109,9 +109,14 @@ class _ContactsHomeState extends State<ContactsHome> {
     if (_query.isEmpty) return _contacts;
     final q = _query.toLowerCase();
     return _contacts.where((c) {
-      if (c.displayName.toLowerCase().contains(q)) return true;
+      if (_displayName(c).toLowerCase().contains(q)) return true;
       return c.phones.any((p) => p.number.replaceAll(' ', '').contains(q.replaceAll(' ', '')));
     }).toList();
+  }
+
+  String _displayName(Contact contact) {
+    final name = contact.displayName?.trim();
+    return name == null || name.isEmpty ? 'Unnamed contact' : name;
   }
 
   Color _avatarColor(String name) => const Color(0xFF151515);
@@ -124,6 +129,7 @@ class _ContactsHomeState extends State<ContactsHome> {
   }
 
   void _showContact(Contact contact) {
+    final displayName = _displayName(contact);
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -142,12 +148,12 @@ class _ContactsHomeState extends State<ContactsHome> {
               const SizedBox(height: 24),
               CircleAvatar(
                 radius: 38,
-                backgroundColor: _avatarColor(contact.displayName),
-                child: Text(_initials(contact.displayName),
+                backgroundColor: _avatarColor(displayName),
+                child: Text(_initials(displayName),
                   style: const TextStyle(fontSize: 24, color: ink, fontWeight: FontWeight.w600)),
               ),
               const SizedBox(height: 14),
-              Text(contact.displayName, textAlign: TextAlign.center,
+              Text(displayName, textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 23, fontWeight: FontWeight.w700, color: ink)),
               const SizedBox(height: 24),
               const Align(
@@ -268,11 +274,11 @@ class _ContactsHomeState extends State<ContactsHome> {
                               contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
                               leading: CircleAvatar(
                                 radius: 25,
-                                backgroundColor: _avatarColor(contact.displayName),
-                                child: Text(_initials(contact.displayName),
+                                backgroundColor: _avatarColor(_displayName(contact)),
+                                child: Text(_initials(_displayName(contact)),
                                   style: const TextStyle(color: ink, fontWeight: FontWeight.w600)),
                               ),
-                              title: Text(contact.displayName.isEmpty ? 'Unnamed contact' : contact.displayName,
+                              title: Text(_displayName(contact),
                                 maxLines: 1, overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(color: ink, fontSize: 16, fontWeight: FontWeight.w600)),
                               subtitle: Text(
