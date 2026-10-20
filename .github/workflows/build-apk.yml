@@ -38,21 +38,34 @@ jobs:
           import 'package:contacts_flutter/main.dart';
 
           void main() {
-            testWidgets('Contacts app renders its title', (tester) async {
+            testWidgets('Contacts shows add button and no top refresh button', (tester) async {
               await tester.pumpWidget(const ContactsApp());
               expect(find.text('Contacts'), findsOneWidget);
+              expect(find.byTooltip('Add contact'), findsOneWidget);
+              expect(find.byTooltip('Refresh contacts'), findsNothing);
             });
           }
           EOF
-      - name: Restore contacts permission
+      - name: Set app label and contacts permission
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
+
           p = Path('android/app/src/main/AndroidManifest.xml')
           s = p.read_text()
           perm = '<uses-permission android:name="android.permission.READ_CONTACTS"/>'
           if perm not in s:
               s = s.replace('<application', perm + '\n    <application', 1)
+          s, label_count = re.subn(
+              r'(<application\b[^>]*\bandroid:label=")[^"]*(")',
+              r'\1Contacts\2',
+              s,
+              count=1,
+              flags=re.S,
+          )
+          if label_count == 0:
+              s = s.replace('<application', '<application android:label="Contacts"', 1)
           p.write_text(s)
           PY
       - name: Get dependencies

@@ -105,6 +105,23 @@ class _ContactsHomeState extends State<ContactsHome> {
     }
   }
 
+  Future<void> _addContact() async {
+    try {
+      final createdContactId = await FlutterContacts.native.showCreator();
+      if (!mounted || createdContactId == null) return;
+      await _loadContacts();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Contact added')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open contact editor')),
+      );
+    }
+  }
+
   List<Contact> get _filtered {
     if (_query.isEmpty) return _contacts;
     final q = _query.toLowerCase();
@@ -195,14 +212,13 @@ class _ContactsHomeState extends State<ContactsHome> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Contacts', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700)),
-        actions: [
-          IconButton(
-            tooltip: 'Refresh contacts',
-            onPressed: _loadContacts,
-            icon: const Icon(Icons.refresh_rounded),
-          ),
-          const SizedBox(width: 6),
-        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        tooltip: 'Add contact',
+        onPressed: _addContact,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        child: const Icon(Icons.add_rounded),
       ),
       body: SafeArea(
         child: Column(
