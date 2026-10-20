@@ -52,6 +52,8 @@ jobs:
           PY
       - name: Get dependencies
         run: flutter pub get
+      - name: Generate launcher icons
+        run: dart run launcher_icons
       - name: Analyze
         run: flutter analyze
       - name: Test

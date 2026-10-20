@@ -1,0 +1,23 @@
+# Merge this configuration into launcher_icons.yaml at the Flutter project root.
+# The launcher_icons package accepts SVG input; its SVG renderer is currently documented as beta.
+launcher_icons:
+  image_path: "assets/app_icon/app_icon.svg"
+  android:
+    generate: true
+  ios:
+    generate: true
+  web:
+    generate: true
+    image_path: "assets/app_icon/app_icon.svg"
+    background_color: "#000000"
+    theme_color: "#000000"
+  windows:
+    generate: true
+    image_path: "assets/app_icon/app_icon.svg"
+    icon_size: 256
+  macos:
+    generate: true
+    image_path: "assets/app_icon/app_icon.svg"
+  linux:
+    generate: true
+    image_path: "assets/app_icon/app_icon.svg"

@@ -3,10 +3,10 @@ import 'package:flutter_contacts/flutter_contacts.dart';
 
 void main() => runApp(const ContactsApp());
 
-const teal = Color(0xFF087F8C);
-const ink = Color(0xFF202A30);
-const muted = Color(0xFF738087);
-const page = Color(0xFFF8FAFA);
+const teal = Color(0xFFFFFFFF);
+const ink = Color(0xFFFFFFFF);
+const muted = Color(0xFFFFFFFF);
+const page = Color(0xFF000000);
 
 class ContactsApp extends StatelessWidget {
   const ContactsApp({super.key});
@@ -18,8 +18,21 @@ class ContactsApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
+        brightness: Brightness.dark,
         scaffoldBackgroundColor: page,
-        colorScheme: ColorScheme.fromSeed(seedColor: teal, surface: page),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.white,
+          brightness: Brightness.dark,
+          surface: page,
+        ).copyWith(
+          primary: Colors.white,
+          onPrimary: Colors.black,
+          secondary: Colors.white,
+          onSecondary: Colors.black,
+          surface: Colors.black,
+          onSurface: Colors.white,
+          outline: Colors.white,
+        ),
         fontFamily: 'Roboto',
         appBarTheme: const AppBarTheme(
           backgroundColor: page,
@@ -101,13 +114,7 @@ class _ContactsHomeState extends State<ContactsHome> {
     }).toList();
   }
 
-  Color _avatarColor(String name) {
-    const colors = [
-      Color(0xFFE2F1F0), Color(0xFFF9E8D8), Color(0xFFE8E7F8),
-      Color(0xFFE3EEDB), Color(0xFFF6E2EA), Color(0xFFDDEAF7),
-    ];
-    return colors[name.isEmpty ? 0 : name.codeUnitAt(0) % colors.length];
-  }
+  Color _avatarColor(String name) => const Color(0xFF151515);
 
   String _initials(String name) {
     final words = name.trim().split(RegExp(r'\s+')).where((e) => e.isNotEmpty).toList();
@@ -120,7 +127,7 @@ class _ContactsHomeState extends State<ContactsHome> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.black,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -131,7 +138,7 @@ class _ContactsHomeState extends State<ContactsHome> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(width: 40, height: 4, decoration: BoxDecoration(
-                color: const Color(0xFFDCE2E4), borderRadius: BorderRadius.circular(10))),
+                color: Colors.white54, borderRadius: BorderRadius.circular(10))),
               const SizedBox(height: 24),
               CircleAvatar(
                 radius: 38,
@@ -156,7 +163,7 @@ class _ContactsHomeState extends State<ContactsHome> {
                   margin: const EdgeInsets.only(top: 8),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
                   decoration: BoxDecoration(
-                    color: page, borderRadius: BorderRadius.circular(14)),
+                    color: page, borderRadius: BorderRadius.circular(14), border: Border.all(color: Colors.white24)), 
                   child: SelectableText(phone.number,
                     style: const TextStyle(fontSize: 17, color: ink, fontWeight: FontWeight.w500)),
                 )),
@@ -189,6 +196,7 @@ class _ContactsHomeState extends State<ContactsHome> {
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
               child: TextField(
                 controller: _search,
+                style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: 'Search contacts or numbers',
                   hintStyle: const TextStyle(color: muted, fontSize: 15),
@@ -199,10 +207,14 @@ class _ContactsHomeState extends State<ContactsHome> {
                     icon: const Icon(Icons.close_rounded),
                   ),
                   filled: true,
-                  fillColor: const Color(0xFFEEF3F3),
+                  fillColor: page,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
+                    borderSide: const BorderSide(color: Colors.white54),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: Colors.white),
                   ),
                   contentPadding: const EdgeInsets.symmetric(vertical: 16),
                 ),
@@ -239,7 +251,7 @@ class _ContactsHomeState extends State<ContactsHome> {
                           padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                           itemCount: contacts.length,
                           separatorBuilder: (_, __) => const Divider(
-                            height: 1, indent: 76, endIndent: 8, color: Color(0xFFE9EEEE)),
+                            height: 1, indent: 76, endIndent: 8, color: Colors.white24),
                           itemBuilder: (context, index) {
                             final contact = contacts[index];
                             final numbers = contact.phones.map((p) => p.number).where((n) => n.isNotEmpty).toList();
@@ -255,7 +267,7 @@ class _ContactsHomeState extends State<ContactsHome> {
                                 maxLines: 1, overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(color: ink, fontSize: 16, fontWeight: FontWeight.w600)),
                               subtitle: Text(
-                                numbers.isEmpty ? 'No phone number' : numbers.join(' · '),
+                                numbers.isEmpty ? 'No phone number' : numbers.join(' Â· '),
                                 maxLines: 2, overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(color: muted, fontSize: 13, height: 1.45)),
                               onTap: () => _showContact(contact),
@@ -277,7 +289,7 @@ class _ContactsHomeState extends State<ContactsHome> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 48, color: const Color(0xFF9AA9AD)),
+            Icon(icon, size: 48, color: Colors.white),
             const SizedBox(height: 14),
             Text(title, textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: ink)),
