@@ -71,13 +71,13 @@ jobs:
           ]
           for permission in permissions:
               if permission not in s:
-                  s = s.replace('<application', permission + '\\n    <application', 1)
+                  s = s.replace('<application', permission + '\n    <application', 1)
           s, label_count = re.subn(
-            r'(<application\\b[^>]*\\bandroid:label=")[^"]*(")',
-            r'\\1Contacts\\2',
-            s,
-            count=1,
-            flags=re.S,
+              r'(<application\b[^>]*\bandroid:label=")[^"]*(")',
+              r'\1Contacts\2',
+              s,
+              count=1,
+              flags=re.S,
           )
           if label_count == 0:
               s = s.replace('<application', '<application android:label="Contacts"', 1)
