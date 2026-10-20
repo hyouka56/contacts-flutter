@@ -163,7 +163,17 @@ class _ContactsHomeState extends State<ContactsHome> {
         );
         return;
       }
-      await FlutterContacts.delete(contact.id);
+      final contactId = contact.id;
+      if (contactId == null || contactId.isEmpty) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('This contact has no valid ID and cannot be deleted.'),
+          ),
+        );
+        return;
+      }
+      await FlutterContacts.delete(contactId);
       await _loadContacts();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
