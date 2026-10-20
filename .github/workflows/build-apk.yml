@@ -1,0 +1,52 @@
+name: Build Contacts APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Create Android platform scaffolding
+        run: flutter create --platforms=android --org com.hyouka56 --project-name contacts_flutter .
+      - name: Restore app manifest permission
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('android/app/src/main/AndroidManifest.xml')
+          s = p.read_text()
+          perm = '<uses-permission android:name="android.permission.READ_CONTACTS"/>'
+          if perm not in s:
+              s = s.replace('<application', perm + '\n    <application', 1)
+          p.write_text(s)
+          PY
+      - name: Get dependencies
+        run: flutter pub get
+      - name: Analyze
+        run: flutter analyze
+      - name: Test
+        run: flutter test
+      - name: Build APK
+        run: flutter build apk --release
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: contacts-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
