@@ -150,9 +150,18 @@ class _ContactsHomeState extends State<ContactsHome> {
               Text(contact.displayName, textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 23, fontWeight: FontWeight.w700, color: ink)),
               const SizedBox(height: 24),
-              Align(alignment: Alignment.centerLeft,
-                child: Text('PHONE NUMBERS', style: TextStyle(
-                  color: muted, fontSize: 12, letterSpacing: 1.2, fontWeight: FontWeight.w700))),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'PHONE NUMBERS',
+                  style: TextStyle(
+                    color: muted,
+                    fontSize: 12,
+                    letterSpacing: 1.2,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
               const SizedBox(height: 8),
               if (contact.phones.isEmpty)
                 const Padding(padding: EdgeInsets.symmetric(vertical: 18),
@@ -267,7 +276,7 @@ class _ContactsHomeState extends State<ContactsHome> {
                                 maxLines: 1, overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(color: ink, fontSize: 16, fontWeight: FontWeight.w600)),
                               subtitle: Text(
-                                numbers.isEmpty ? 'No phone number' : numbers.join(' Â· '),
+                                numbers.isEmpty ? 'No phone number' : numbers.join(' ÃÂ· '),
                                 maxLines: 2, overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(color: muted, fontSize: 13, height: 1.45)),
                               onTap: () => _showContact(contact),
