@@ -63,8 +63,28 @@ jobs:
         run: flutter analyze
       - name: Test
         run: flutter test
-      - name: Build APK
-        run: flutter build apk --release
+      - name: Build arm64-v8a APK
+        run: flutter build apk --release --target-platform android-arm64
+      - name: Verify APK is arm64-v8a only
+        run: |
+          python3 - <<'PY'
+          import zipfile
+          from pathlib import Path
+
+          apk = Path('build/app/outputs/flutter-apk/app-release.apk')
+          if not apk.is_file():
+              raise SystemExit(f'APK not found: {apk}')
+          with zipfile.ZipFile(apk) as archive:
+              abis = sorted({
+                  name.split('/')[1]
+                  for name in archive.namelist()
+                  if name.startswith('lib/') and len(name.split('/')) > 2
+              })
+          print('Native ABIs included:', ', '.join(abis) if abis else '(none found)')
+          if abis != ['arm64-v8a']:
+              raise SystemExit(f'Expected only arm64-v8a, found: {abis}')
+          print(f'PASS: {apk} contains arm64-v8a native libraries only')
+          PY
       - name: Upload APK
         uses: actions/upload-artifact@v7
         with:
