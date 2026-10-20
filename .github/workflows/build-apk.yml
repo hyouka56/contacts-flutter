@@ -31,9 +31,10 @@ jobs:
       - name: Disable Gradle file watching in CI
         run: |
           printf '\n# Avoid duplicate file-watch paths on ephemeral CI runners.\norg.gradle.vfs.watch=false\n' >> android/gradle.properties
-      - name: Restore app test
+      - name: Restore app tests
         run: |
           cat > test/widget_test.dart <<'EOF'
+          import 'package:flutter/material.dart';
           import 'package:flutter_test/flutter_test.dart';
           import 'package:contacts_flutter/main.dart';
 
@@ -44,9 +45,19 @@ jobs:
               expect(find.byTooltip('Add contact'), findsOneWidget);
               expect(find.byTooltip('Refresh contacts'), findsNothing);
             });
+
+            testWidgets('Add contact form validates name and phone number', (tester) async {
+              await tester.pumpWidget(const MaterialApp(home: AddContactPage()));
+              expect(find.byKey(const ValueKey('contact-name')), findsOneWidget);
+              expect(find.byKey(const ValueKey('contact-phone')), findsOneWidget);
+              await tester.tap(find.byKey(const ValueKey('save-contact')));
+              await tester.pump();
+              expect(find.text('Enter a name'), findsOneWidget);
+              expect(find.text('Enter a phone number'), findsOneWidget);
+            });
           }
           EOF
-      - name: Set app label and contacts permission
+      - name: Set app label and contacts permissions
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -54,15 +65,19 @@ jobs:
 
           p = Path('android/app/src/main/AndroidManifest.xml')
           s = p.read_text()
-          perm = '<uses-permission android:name="android.permission.READ_CONTACTS"/>'
-          if perm not in s:
-              s = s.replace('<application', perm + '\n    <application', 1)
+          permissions = [
+              '<uses-permission android:name="android.permission.READ_CONTACTS"/>',
+              '<uses-permission android:name="android.permission.WRITE_CONTACTS"/>',
+          ]
+          for permission in permissions:
+              if permission not in s:
+                  s = s.replace('<application', permission + '\\n    <application', 1)
           s, label_count = re.subn(
-              r'(<application\b[^>]*\bandroid:label=")[^"]*(")',
-              r'\1Contacts\2',
-              s,
-              count=1,
-              flags=re.S,
+            r'(<application\\b[^>]*\\bandroid:label=")[^"]*(")',
+            r'\\1Contacts\\2',
+            s,
+            count=1,
+            flags=re.S,
           )
           if label_count == 0:
               s = s.replace('<application', '<application android:label="Contacts"', 1)

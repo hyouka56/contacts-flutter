@@ -107,17 +107,22 @@ class _ContactsHomeState extends State<ContactsHome> {
 
   Future<void> _addContact() async {
     try {
-      final createdContactId = await FlutterContacts.native.showCreator();
-      if (!mounted || createdContactId == null) return;
+      final saved = await Navigator.of(context).push<bool>(
+        MaterialPageRoute<bool>(
+          builder: (_) => const AddContactPage(),
+        ),
+      );
+      if (!mounted || saved != true) return;
+
       await _loadContacts();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Contact added')),
+        const SnackBar(content: Text('Contact saved')),
       );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open contact editor')),
+        const SnackBar(content: Text('Could not open add-contact form')),
       );
     }
   }
@@ -329,6 +334,218 @@ class _ContactsHomeState extends State<ContactsHome> {
               style: const TextStyle(color: muted, height: 1.5)),
             ?action,
           ],
+        ),
+      ),
+    );
+  }
+}
+
+
+class AddContactPage extends StatefulWidget {
+  const AddContactPage({super.key});
+
+  @override
+  State<AddContactPage> createState() => _AddContactPageState();
+}
+
+class _AddContactPageState extends State<AddContactPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveContact() async {
+    if (_saving || !(_formKey.currentState?.validate() ?? false)) return;
+
+    FocusScope.of(context).unfocus();
+    setState(() => _saving = true);
+
+    try {
+      final permissionStatus = await FlutterContacts.permissions.request(
+        PermissionType.write,
+      );
+      if (!mounted) return;
+
+      if (permissionStatus != PermissionStatus.granted) {
+        setState(() => _saving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Allow contacts write access to save this contact.'),
+          ),
+        );
+        return;
+      }
+
+      final fullName = _nameController.text.trim();
+      final nameParts = fullName.split(RegExp(r'\\s+'));
+      final firstName = nameParts.first;
+      final lastName = nameParts.length > 1
+          ? nameParts.skip(1).join(' ')
+          : '';
+
+      await FlutterContacts.create(
+        Contact(
+          name: Name(first: firstName, last: lastName),
+          phones: [Phone(number: _phoneController.text.trim())],
+        ),
+      );
+
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not save contact. Check permission and try again.'),
+        ),
+      );
+    }
+  }
+
+  InputDecoration _fieldDecoration({
+    required String label,
+    required IconData icon,
+  }) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: muted),
+      prefixIcon: Icon(icon, color: muted),
+      filled: true,
+      fillColor: page,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Colors.white54),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Colors.white38),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Colors.white),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Colors.redAccent),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: page,
+      appBar: AppBar(
+        title: const Text(
+          'New contact',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+        ),
+      ),
+      body: SafeArea(
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+            children: [
+              const CircleAvatar(
+                radius: 34,
+                backgroundColor: Color(0xFF151515),
+                child: Icon(Icons.person_add_alt_1_rounded,
+                    color: Colors.white, size: 32),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Add to contacts',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: ink,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Enter a name and phone number. The contact will be saved to your phone.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: muted, height: 1.5),
+              ),
+              const SizedBox(height: 28),
+              TextFormField(
+                key: const ValueKey('contact-name'),
+                controller: _nameController,
+                textCapitalization: TextCapitalization.words,
+                textInputAction: TextInputAction.next,
+                style: const TextStyle(color: ink),
+                decoration: _fieldDecoration(
+                  label: 'Name',
+                  icon: Icons.person_outline_rounded,
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Enter a name';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                key: const ValueKey('contact-phone'),
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                textInputAction: TextInputAction.done,
+                style: const TextStyle(color: ink),
+                decoration: _fieldDecoration(
+                  label: 'Phone number',
+                  icon: Icons.phone_outlined,
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Enter a phone number';
+                  }
+                  return null;
+                },
+                onFieldSubmitted: (_) => _saveContact(),
+              ),
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+          child: SizedBox(
+            height: 54,
+            child: FilledButton.icon(
+              key: const ValueKey('save-contact'),
+              onPressed: _saving ? null : _saveContact,
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              icon: _saving
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.black,
+                      ),
+                    )
+                  : const Icon(Icons.check_rounded),
+              label: Text(_saving ? 'Saving…' : 'Save contact'),
+            ),
+          ),
         ),
       ),
     );
