@@ -265,7 +265,7 @@ class _ContactsHomeState extends State<ContactsHome> {
                           physics: const AlwaysScrollableScrollPhysics(),
                           padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                           itemCount: contacts.length,
-                          separatorBuilder: (_, __) => const Divider(
+                          separatorBuilder: (_, _) => const Divider(
                             height: 1, indent: 76, endIndent: 8, color: Colors.white24),
                           itemBuilder: (context, index) {
                             final contact = contacts[index];
@@ -311,7 +311,7 @@ class _ContactsHomeState extends State<ContactsHome> {
             const SizedBox(height: 8),
             Text(message, textAlign: TextAlign.center,
               style: const TextStyle(color: muted, height: 1.5)),
-            if (action != null) action,
+            ?action,
           ],
         ),
       ),
