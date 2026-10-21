@@ -46,11 +46,6 @@ class ContactsApp extends StatelessWidget {
   }
 }
 
-String normalizePhoneNumber(String phoneNumber) => phoneNumber.trim().replaceAll(
-      RegExp(r'[\s\u00A0\u2007\u202F().\-\u2010-\u2015]'),
-      '',
-    );
-
 class ContactsHome extends StatefulWidget {
   const ContactsHome({super.key});
 

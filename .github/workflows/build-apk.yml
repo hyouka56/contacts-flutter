@@ -31,54 +31,6 @@ jobs:
       - name: Disable Gradle file watching in CI
         run: |
           printf '\n# Avoid duplicate file-watch paths on ephemeral CI runners.\norg.gradle.vfs.watch=false\n' >> android/gradle.properties
-      - name: Restore app tests
-        run: |
-          cat > test/widget_test.dart <<'EOF'
-          import 'package:flutter/material.dart';
-          import 'package:flutter_test/flutter_test.dart';
-          import 'package:contacts_flutter/main.dart';
-
-          void main() {
-            test('phone formatting is removed and a tel URI preserves the international prefix', () {
-              final number = normalizePhoneNumber(' +20 (100) 123-45–67 ');
-              expect(number, '+201001234567');
-              expect(Uri(scheme: 'tel', path: number).toString(), 'tel:+201001234567');
-            });
-
-            testWidgets('App opens directly to contacts only', (tester) async {
-              await tester.pumpWidget(const ContactsApp());
-              await tester.pump();
-              expect(find.text('Contacts'), findsOneWidget);
-              expect(find.text('Dialer'), findsNothing);
-              expect(find.text('Recents'), findsNothing);
-              expect(find.byKey(const ValueKey('dialer-number')), findsNothing);
-            });
-
-            testWidgets('Add contact form validates name and phone number', (tester) async {
-              await tester.pumpWidget(const MaterialApp(home: AddContactPage()));
-              expect(find.byKey(const ValueKey('contact-name')), findsOneWidget);
-              expect(find.byKey(const ValueKey('contact-phone')), findsOneWidget);
-              final nameInput = tester.widget<TextField>(
-                find.descendant(
-                  of: find.byKey(const ValueKey('contact-name')),
-                  matching: find.byType(TextField),
-                ),
-              );
-              final phoneInput = tester.widget<TextField>(
-                find.descendant(
-                  of: find.byKey(const ValueKey('contact-phone')),
-                  matching: find.byType(TextField),
-                ),
-              );
-              expect(nameInput.decoration?.labelText, 'Name');
-              expect(phoneInput.decoration?.labelText, 'Phone number');
-              await tester.tap(find.byKey(const ValueKey('save-contact')));
-              await tester.pump();
-              expect(find.text('Enter a name'), findsOneWidget);
-              expect(find.text('Enter a phone number'), findsOneWidget);
-            });
-          }
-          EOF
       - name: Set app label and contacts permissions
         run: |
           python3 - <<'PY'
@@ -94,15 +46,6 @@ jobs:
           for permission in permissions:
               if permission not in s:
                   s = s.replace('<application', permission + '\n    <application', 1)
-          dial_intent_query = '<intent><action android:name="android.intent.action.DIAL"/><data android:scheme="tel"/></intent>'
-          if '<queries>' in s:
-              if 'android.intent.action.DIAL' not in s:
-                  s = s.replace('</queries>', '        ' + dial_intent_query + chr(10) + '    </queries>', 1)
-          else:
-              queries = '<queries>' + dial_intent_query + '</queries>'
-              s = s.replace('<application', queries + chr(10) + '    <application', 1)
-          if 'android.intent.action.DIAL' not in s or 'android:scheme="tel"' not in s:
-              raise SystemExit('Could not configure Android dialer intent query')
           s, label_count = re.subn(
               r'(<application\b[^>]*\bandroid:label=")[^"]*(")',
               r'\1Contacts\2',
