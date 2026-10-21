@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:android_intent_plus/android_intent.dart';
 
 void main() => runApp(const ContactsApp());
 
@@ -216,19 +216,17 @@ class _ContactsHomeState extends State<ContactsHome> {
     if (number.isEmpty) return;
 
     try {
-      final opened = await launchUrl(
-        Uri(scheme: 'tel', path: number),
-        mode: LaunchMode.externalApplication,
+      final dialerIntent = AndroidIntent(
+        action: 'android.intent.action.DIAL',
+        data: Uri(scheme: 'tel', path: number).toString(),
       );
-      if (!opened && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open the phone app')),
-        );
-      }
+      await dialerIntent.launch();
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open the phone app')),
+        const SnackBar(
+          content: Text('Could not open the phone app. Check that a phone app is installed.'),
+        ),
       );
     }
   }

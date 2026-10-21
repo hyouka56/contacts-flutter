@@ -72,6 +72,9 @@ jobs:
           for permission in permissions:
               if permission not in s:
                   s = s.replace('<application', permission + '\n    <application', 1)
+          if '<queries>' not in s:
+              queries = '<queries><intent><action android:name="android.intent.action.DIAL"/><data android:scheme="tel"/></intent></queries>'
+              s = s.replace('<application', queries + chr(10) + '    <application', 1)
           s, label_count = re.subn(
               r'(<application\b[^>]*\bandroid:label=")[^"]*(")',
               r'\1Contacts\2',
