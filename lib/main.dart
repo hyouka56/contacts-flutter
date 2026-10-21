@@ -346,8 +346,9 @@ class _ContactsHomeState extends State<ContactsHome> {
                   controller: _search,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                    hintText: 'Search contacts or numbers',
-                    hintStyle: const TextStyle(color: muted, fontSize: 15),
+                    labelText: 'Search contacts or numbers',
+                    labelStyle: const TextStyle(color: muted, fontSize: 15),
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
                     prefixIcon: const Icon(Icons.search_rounded, color: muted),
                     suffixIcon: _query.isEmpty ? null : IconButton(
                       tooltip: 'Clear search',
@@ -524,34 +525,6 @@ class _AddContactPageState extends State<AddContactPage> {
     }
   }
 
-  InputDecoration _fieldDecoration({
-    required String label,
-    required IconData icon,
-  }) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: const TextStyle(color: muted),
-      prefixIcon: Icon(icon, color: muted),
-      filled: true,
-      fillColor: page,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Colors.white54),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Colors.white38),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Colors.white),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Colors.redAccent),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -598,9 +571,28 @@ class _AddContactPageState extends State<AddContactPage> {
                 textCapitalization: TextCapitalization.words,
                 textInputAction: TextInputAction.next,
                 style: const TextStyle(color: ink),
-                decoration: _fieldDecoration(
-                  label: 'Name',
-                  icon: Icons.person_outline_rounded,
+                decoration: InputDecoration(
+                  labelText: 'Name',
+                  labelStyle: const TextStyle(color: muted),
+                  prefixIcon: const Icon(Icons.person_outline_rounded, color: muted),
+                  filled: true,
+                  fillColor: page,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: Colors.white54),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: Colors.white38),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: Colors.white),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: Colors.redAccent),
+                  ),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -616,9 +608,28 @@ class _AddContactPageState extends State<AddContactPage> {
                 keyboardType: TextInputType.phone,
                 textInputAction: TextInputAction.done,
                 style: const TextStyle(color: ink),
-                decoration: _fieldDecoration(
-                  label: 'Phone number',
-                  icon: Icons.phone_outlined,
+                decoration: InputDecoration(
+                  labelText: 'Phone number',
+                  labelStyle: const TextStyle(color: muted),
+                  prefixIcon: const Icon(Icons.phone_outlined, color: muted),
+                  filled: true,
+                  fillColor: page,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: Colors.white54),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: Colors.white38),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: Colors.white),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: Colors.redAccent),
+                  ),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {

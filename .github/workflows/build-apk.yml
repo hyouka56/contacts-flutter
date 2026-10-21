@@ -58,6 +58,8 @@ jobs:
               await tester.pumpWidget(const MaterialApp(home: AddContactPage()));
               expect(find.byKey(const ValueKey('contact-name')), findsOneWidget);
               expect(find.byKey(const ValueKey('contact-phone')), findsOneWidget);
+              expect(tester.widget<TextFormField>(find.byKey(const ValueKey('contact-name'))).decoration.labelText, 'Name');
+              expect(tester.widget<TextFormField>(find.byKey(const ValueKey('contact-phone'))).decoration.labelText, 'Phone number');
               await tester.tap(find.byKey(const ValueKey('save-contact')));
               await tester.pump();
               expect(find.text('Enter a name'), findsOneWidget);
