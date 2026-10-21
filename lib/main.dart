@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() => runApp(const ContactsApp());
 
@@ -210,6 +211,28 @@ class _ContactsHomeState extends State<ContactsHome> {
     return (words.first.characters.first + words.last.characters.first).toUpperCase();
   }
 
+  Future<void> _openDialer(String phoneNumber) async {
+    final number = phoneNumber.trim();
+    if (number.isEmpty) return;
+
+    try {
+      final opened = await launchUrl(
+        Uri(scheme: 'tel', path: number),
+        mode: LaunchMode.externalApplication,
+      );
+      if (!opened && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open the phone app')),
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open the phone app')),
+      );
+    }
+  }
+
   void _showContact(Contact contact) {
     final displayName = _displayName(contact);
     showModalBottomSheet<void>(
@@ -261,8 +284,27 @@ class _ContactsHomeState extends State<ContactsHome> {
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
                   decoration: BoxDecoration(
                     color: page, borderRadius: BorderRadius.circular(14), border: Border.all(color: Colors.white24)), 
-                  child: SelectableText(phone.number,
-                    style: const TextStyle(fontSize: 17, color: ink, fontWeight: FontWeight.w500)),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: SelectableText(
+                          phone.number,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            color: ink,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: 'Call ${phone.number}',
+                        onPressed: phone.number.trim().isEmpty
+                            ? null
+                            : () => _openDialer(phone.number),
+                        icon: const Icon(Icons.call_rounded, color: Colors.white),
+                      ),
+                    ],
+                  ),
                 )),
             ],
           ),
