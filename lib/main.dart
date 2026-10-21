@@ -47,9 +47,14 @@ class ContactsApp extends StatelessWidget {
   }
 }
 
+String normalizePhoneNumber(String phoneNumber) => phoneNumber.trim().replaceAll(
+      RegExp(r'[\s\u00A0\u2007\u202F().\-\u2010-\u2015]'),
+      '',
+    );
+
 Future<void> _openPhoneDialer(BuildContext context, String phoneNumber) async {
   // Keep the actual phone digits and international '+' prefix, but remove display formatting.
-  final number = phoneNumber.trim().replaceAll(RegExp(r'[\s().-]'), '');
+  final number = normalizePhoneNumber(phoneNumber);
   if (number.isEmpty) return;
   try {
     final intent = AndroidIntent(
@@ -334,29 +339,33 @@ class _ContactsHomeState extends State<ContactsHome> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-              child: TextField(
-                controller: _search,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Search contacts or numbers',
-                  hintStyle: const TextStyle(color: muted, fontSize: 15),
-                  prefixIcon: const Icon(Icons.search_rounded, color: muted),
-                  suffixIcon: _query.isEmpty ? null : IconButton(
-                    tooltip: 'Clear search',
-                    onPressed: _search.clear,
-                    icon: const Icon(Icons.close_rounded),
+              child: Semantics(
+                label: 'Search contacts or numbers',
+                textField: true,
+                child: TextField(
+                  controller: _search,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'Search contacts or numbers',
+                    hintStyle: const TextStyle(color: muted, fontSize: 15),
+                    prefixIcon: const Icon(Icons.search_rounded, color: muted),
+                    suffixIcon: _query.isEmpty ? null : IconButton(
+                      tooltip: 'Clear search',
+                      onPressed: _search.clear,
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                    filled: true,
+                    fillColor: page,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: Colors.white54),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: Colors.white),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  filled: true,
-                  fillColor: page,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: Colors.white54),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: Colors.white),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 16),
                 ),
               ),
             ),

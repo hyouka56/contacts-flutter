@@ -39,6 +39,12 @@ jobs:
           import 'package:contacts_flutter/main.dart';
 
           void main() {
+            test('phone formatting is removed and a tel URI preserves the international prefix', () {
+              final number = normalizePhoneNumber(' +20 (100) 123-45–67 ');
+              expect(number, '+201001234567');
+              expect(Uri(scheme: 'tel', path: number).toString(), 'tel:+201001234567');
+            });
+
             testWidgets('App opens directly to contacts only', (tester) async {
               await tester.pumpWidget(const ContactsApp());
               await tester.pump();
@@ -96,6 +102,7 @@ jobs:
         with:
           name: contacts-pubspec-lock
           path: pubspec.lock
+          if-no-files-found: error
           retention-days: 7
       - name: Generate launcher icons
         run: dart run launcher_icons
@@ -130,3 +137,4 @@ jobs:
         with:
           name: contacts-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
