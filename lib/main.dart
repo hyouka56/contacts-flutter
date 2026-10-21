@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
-import 'package:android_intent_plus/android_intent.dart';
 
 void main() => runApp(const ContactsApp());
 
@@ -43,31 +42,6 @@ class ContactsApp extends StatelessWidget {
         ),
       ),
       home: const ContactsHome(),
-    );
-  }
-}
-
-String normalizePhoneNumber(String phoneNumber) => phoneNumber.trim().replaceAll(
-      RegExp(r'[\s\u00A0\u2007\u202F().\-\u2010-\u2015]'),
-      '',
-    );
-
-Future<void> _openPhoneDialer(BuildContext context, String phoneNumber) async {
-  // Keep the actual phone digits and international '+' prefix, but remove display formatting.
-  final number = normalizePhoneNumber(phoneNumber);
-  if (number.isEmpty) return;
-  try {
-    final intent = AndroidIntent(
-      action: 'android.intent.action.DIAL',
-      data: Uri(scheme: 'tel', path: number).toString(),
-    );
-    await intent.launch();
-  } catch (_) {
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Could not open the phone app. Check that a phone app is installed.'),
-      ),
     );
   }
 }
@@ -236,10 +210,6 @@ class _ContactsHomeState extends State<ContactsHome> {
     return (words.first.characters.first + words.last.characters.first).toUpperCase();
   }
 
-  Future<void> _openDialer(String phoneNumber) async {
-    await _openPhoneDialer(context, phoneNumber);
-  }
-
   void _showContact(Contact contact) {
     final displayName = _displayName(contact);
     showModalBottomSheet<void>(
@@ -302,13 +272,6 @@ class _ContactsHomeState extends State<ContactsHome> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                      ),
-                      IconButton(
-                        tooltip: 'Call ${phone.number}',
-                        onPressed: phone.number.trim().isEmpty
-                            ? null
-                            : () => _openDialer(phone.number),
-                        icon: const Icon(Icons.call_rounded, color: Colors.white),
                       ),
                     ],
                   ),
