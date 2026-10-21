@@ -49,12 +49,14 @@ class ContactsApp extends StatelessWidget {
 }
 
 Future<void> _openPhoneDialer(BuildContext context, String phoneNumber) async {
-  final number = phoneNumber.trim();
+  final number = phoneNumber
+      .trim()
+      .replaceAll(RegExp(r'[\s\u00A0\u2007\u202F().\-\u2010-\u2015]'), '');
   if (number.isEmpty) return;
   try {
     final intent = AndroidIntent(
       action: 'android.intent.action.DIAL',
-      data: Uri(scheme: 'tel', path: number).toString(),
+      data: Uri.encodeFull('tel:$number'),
     );
     await intent.launch();
   } catch (_) {
