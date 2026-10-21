@@ -70,8 +70,8 @@ jobs:
                   matching: find.byType(TextField),
                 ),
               );
-              expect(nameInput.decoration.labelText, 'Name');
-              expect(phoneInput.decoration.labelText, 'Phone number');
+              expect(nameInput.decoration?.labelText, 'Name');
+              expect(phoneInput.decoration?.labelText, 'Phone number');
               await tester.tap(find.byKey(const ValueKey('save-contact')));
               await tester.pump();
               expect(find.text('Enter a name'), findsOneWidget);
