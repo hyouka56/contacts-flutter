@@ -58,8 +58,20 @@ jobs:
               await tester.pumpWidget(const MaterialApp(home: AddContactPage()));
               expect(find.byKey(const ValueKey('contact-name')), findsOneWidget);
               expect(find.byKey(const ValueKey('contact-phone')), findsOneWidget);
-              expect(tester.widget<TextFormField>(find.byKey(const ValueKey('contact-name'))).decoration.labelText, 'Name');
-              expect(tester.widget<TextFormField>(find.byKey(const ValueKey('contact-phone'))).decoration.labelText, 'Phone number');
+              final nameInput = tester.widget<TextField>(
+                find.descendant(
+                  of: find.byKey(const ValueKey('contact-name')),
+                  matching: find.byType(TextField),
+                ),
+              );
+              final phoneInput = tester.widget<TextField>(
+                find.descendant(
+                  of: find.byKey(const ValueKey('contact-phone')),
+                  matching: find.byType(TextField),
+                ),
+              );
+              expect(nameInput.decoration.labelText, 'Name');
+              expect(phoneInput.decoration.labelText, 'Phone number');
               await tester.tap(find.byKey(const ValueKey('save-contact')));
               await tester.pump();
               expect(find.text('Enter a name'), findsOneWidget);
