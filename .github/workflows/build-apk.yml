@@ -80,9 +80,15 @@ jobs:
           for permission in permissions:
               if permission not in s:
                   s = s.replace('<application', permission + '\n    <application', 1)
-          if '<queries>' not in s:
-              queries = '<queries><intent><action android:name="android.intent.action.DIAL"/><data android:scheme="tel"/></intent></queries>'
+          dial_intent_query = '<intent><action android:name="android.intent.action.DIAL"/><data android:scheme="tel"/></intent>'
+          if '<queries>' in s:
+              if 'android.intent.action.DIAL' not in s:
+                  s = s.replace('</queries>', '        ' + dial_intent_query + chr(10) + '    </queries>', 1)
+          else:
+              queries = '<queries>' + dial_intent_query + '</queries>'
               s = s.replace('<application', queries + chr(10) + '    <application', 1)
+          if 'android.intent.action.DIAL' not in s or 'android:scheme="tel"' not in s:
+              raise SystemExit('Could not configure Android dialer intent query')
           s, label_count = re.subn(
               r'(<application\b[^>]*\bandroid:label=")[^"]*(")',
               r'\1Contacts\2',
