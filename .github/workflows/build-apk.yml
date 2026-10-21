@@ -114,14 +114,22 @@ jobs:
           is_kts = build_file.suffix == '.kts'
           enabled_line = 'isCoreLibraryDesugaringEnabled = true' if is_kts else 'coreLibraryDesugaringEnabled true'
           if 'isCoreLibraryDesugaringEnabled' not in gradle and 'coreLibraryDesugaringEnabled' not in gradle:
-              gradle, count = re.subn(r'(compileOptions\s*\{)', r'\1\n        ' + enabled_line, gradle, count=1)
+              gradle, count = re.subn(r'(compileOptions\s*\{)', lambda match: match.group(1) + chr(10) + '        ' + enabled_line, gradle, count=1)
               if count != 1:
                   raise SystemExit('Could not enable core library desugaring')
           dependency = 'coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")' if is_kts else "coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'"
           if 'coreLibraryDesugaring(' not in gradle and 'coreLibraryDesugaring ' not in gradle:
-              gradle, count = re.subn(r'(dependencies\s*\{)', r'\1\n    ' + dependency, gradle, count=1)
-              if count != 1:
-                  raise SystemExit('Could not add core library desugaring dependency')
+              if re.search(r'(?m)^\s*dependencies\s*\{', gradle):
+                  gradle, count = re.subn(
+                      r'(dependencies\s*\{)',
+                      lambda match: match.group(1) + chr(10) + '    ' + dependency,
+                      gradle,
+                      count=1,
+                  )
+                  if count != 1:
+                      raise SystemExit('Could not add core library desugaring dependency')
+              else:
+                  gradle += chr(10) + 'dependencies {' + chr(10) + '    ' + dependency + chr(10) + '}' + chr(10)
           build_file.write_text(gradle)
           PY
       - name: Get dependencies
