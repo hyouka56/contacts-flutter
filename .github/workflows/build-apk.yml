@@ -37,15 +37,31 @@ jobs:
           import 'package:flutter/material.dart';
           import 'package:flutter_test/flutter_test.dart';
           import 'package:contacts_flutter/main.dart';
-
+          
           void main() {
-            testWidgets('Contacts shows add button and no top refresh button', (tester) async {
+            testWidgets('Dialer shows keypad and minimal navigation', (tester) async {
               await tester.pumpWidget(const ContactsApp());
+              expect(find.text('Dialer'), findsOneWidget);
+              expect(find.text('Recents'), findsOneWidget);
               expect(find.text('Contacts'), findsOneWidget);
-              expect(find.byTooltip('Add contact'), findsOneWidget);
-              expect(find.byTooltip('Refresh contacts'), findsNothing);
+              for (final digit in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '#']) {
+                expect(find.byKey(ValueKey('dialer-key-$digit')), findsOneWidget);
+              }
             });
-
+          
+            testWidgets('Dialer accepts digits and deletes the last digit', (tester) async {
+              await tester.pumpWidget(const ContactsApp());
+              await tester.tap(find.byKey(const ValueKey('dialer-key-1')));
+              await tester.tap(find.byKey(const ValueKey('dialer-key-2')));
+              await tester.pump();
+              var field = tester.widget<TextField>(find.byKey(const ValueKey('dialer-number')));
+              expect(field.controller!.text, '12');
+              await tester.tap(find.byTooltip('Delete last digit'));
+              await tester.pump();
+              field = tester.widget<TextField>(find.byKey(const ValueKey('dialer-number')));
+              expect(field.controller!.text, '1');
+            });
+          
             testWidgets('Add contact form validates name and phone number', (tester) async {
               await tester.pumpWidget(const MaterialApp(home: AddContactPage()));
               expect(find.byKey(const ValueKey('contact-name')), findsOneWidget);
@@ -68,6 +84,8 @@ jobs:
           permissions = [
               '<uses-permission android:name="android.permission.READ_CONTACTS"/>',
               '<uses-permission android:name="android.permission.WRITE_CONTACTS"/>',
+              '<uses-permission android:name="android.permission.READ_CALL_LOG"/>',
+              '<uses-permission android:name="android.permission.READ_PHONE_NUMBERS"/>',
           ]
           for permission in permissions:
               if permission not in s:
@@ -85,9 +103,35 @@ jobs:
           if label_count == 0:
               s = s.replace('<application', '<application android:label="Contacts"', 1)
           p.write_text(s)
+
+          # call_log uses Java APIs that require core-library desugaring.
+          kts = Path('android/app/build.gradle.kts')
+          groovy = Path('android/app/build.gradle')
+          build_file = kts if kts.exists() else groovy
+          if not build_file.exists():
+              raise SystemExit('Could not find android/app/build.gradle(.kts)')
+          gradle = build_file.read_text()
+          is_kts = build_file.suffix == '.kts'
+          enabled_line = 'isCoreLibraryDesugaringEnabled = true' if is_kts else 'coreLibraryDesugaringEnabled true'
+          if 'isCoreLibraryDesugaringEnabled' not in gradle and 'coreLibraryDesugaringEnabled' not in gradle:
+              gradle, count = re.subn(r'(compileOptions\s*\{)', r'\1\n        ' + enabled_line, gradle, count=1)
+              if count != 1:
+                  raise SystemExit('Could not enable core library desugaring')
+          dependency = 'coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")' if is_kts else "coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'"
+          if 'coreLibraryDesugaring(' not in gradle and 'coreLibraryDesugaring ' not in gradle:
+              gradle, count = re.subn(r'(dependencies\s*\{)', r'\1\n    ' + dependency, gradle, count=1)
+              if count != 1:
+                  raise SystemExit('Could not add core library desugaring dependency')
+          build_file.write_text(gradle)
           PY
       - name: Get dependencies
         run: flutter pub get
+      - name: Upload resolved dependency lockfile for audit
+        uses: actions/upload-artifact@v7
+        with:
+          name: contacts-pubspec-lock
+          path: pubspec.lock
+          retention-days: 7
       - name: Generate launcher icons
         run: dart run launcher_icons
       - name: Analyze
